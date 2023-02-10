@@ -41,8 +41,12 @@ spec:
            - name: SA_PASSWORD
              valueFrom:
               secretKeyRef:
-               name: mssql-secret
-               key: {{  template "mssql.sapassword" . }}
+                {{- if .Values.secrets.useExisting }}
+                name: {{ .Values.secrets.name }}
+                {{- else }}
+                name: mssql-secret
+                {{- end }}
+                key: {{  template "mssql.sapassword" . }}
           volumeMounts:
            - name: mssqldb
              mountPath: /var/opt/mssql
@@ -54,6 +58,10 @@ spec:
              mountPath: /var/opt/mssql/tempdb
            - name: mssql-config-volume
              mountPath: /var/opt/config
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       volumes:
        - name: mssqldb
          persistentVolumeClaim:
